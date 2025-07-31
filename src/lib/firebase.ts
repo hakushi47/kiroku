@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -19,6 +19,9 @@ const db = getFirestore(app);
 
 // Google認証プロバイダー
 const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 // 認証関連の関数
 export const signInWithGoogle = async () => {
@@ -36,6 +39,27 @@ export const signOutUser = async () => {
     await signOut(auth);
   } catch (error) {
     console.error('ログアウトエラー:', error);
+    throw error;
+  }
+};
+
+// メール/パスワード認証
+export const signUpWithEmail = async (email: string, password: string) => {
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    return result.user;
+  } catch (error) {
+    console.error('メールサインアップエラー:', error);
+    throw error;
+  }
+};
+
+export const signInWithEmail = async (email: string, password: string) => {
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return result.user;
+  } catch (error) {
+    console.error('メールログインエラー:', error);
     throw error;
   }
 };
@@ -70,8 +94,8 @@ export interface Question {
   type: QuestionType;
   title: string;
   required: boolean;
-  options?: string[]; // ラジオボタン・チェックボックス用
-  placeholder?: string;
+  options?: string[] | null; // ラジオボタン・チェックボックス用
+  placeholder?: string | null;
   order: number;
 }
 
@@ -82,6 +106,19 @@ export interface CounselingSheet {
   questions: Question[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+// 回答関連の型定義
+export interface Answer {
+  questionId: string;
+  value: string | string[] | number;
+}
+
+export interface SheetResponse {
+  id: string;
+  sheetId: string;
+  answers: Answer[];
+  submittedAt: Date;
 }
 
 export const saveUserProfile = async (userId: string, profile: UserProfile) => {
@@ -115,10 +152,28 @@ export const saveCounselingSheet = async (userId: string, sheet: CounselingSheet
     console.log('Firebase保存開始:', { userId, sheetId: sheet.id });
     
     const sheetRef = doc(db, 'sheets', sheet.id);
-    const sheetData = {
-      ...sheet,
-      userId,
+    
+    // undefinedの値を除去してFirestoreに保存
+    const cleanSheet = {
+      id: sheet.id,
+      title: sheet.title,
+      description: sheet.description || null,
+      questions: sheet.questions.map(q => ({
+        id: q.id,
+        type: q.type,
+        title: q.title,
+        required: q.required,
+        order: q.order,
+        placeholder: q.placeholder || null,
+        options: q.options || null
+      })),
+      createdAt: sheet.createdAt,
       updatedAt: new Date()
+    };
+    
+    const sheetData = {
+      ...cleanSheet,
+      userId
     };
     
     console.log('保存するデータ:', sheetData);
@@ -133,21 +188,46 @@ export const saveCounselingSheet = async (userId: string, sheet: CounselingSheet
 
 export const getCounselingSheets = async (userId: string): Promise<CounselingSheet[]> => {
   try {
-    const { collection, query, where, orderBy, getDocs } = await import('firebase/firestore');
+    const { collection, query, where, getDocs } = await import('firebase/firestore');
     const sheetsRef = collection(db, 'sheets');
     const q = query(
       sheetsRef,
-      where('userId', '==', userId),
-      orderBy('updatedAt', 'desc')
+      where('userId', '==', userId)
     );
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => ({
+    const sheets = querySnapshot.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
       createdAt: doc.data().createdAt?.toDate(),
       updatedAt: doc.data().updatedAt?.toDate()
     })) as CounselingSheet[];
+    
+    // クライアント側でソート
+    return sheets.sort((a, b) => {
+      if (!a.updatedAt || !b.updatedAt) return 0;
+      return b.updatedAt.getTime() - a.updatedAt.getTime();
+    });
+  } catch (error) {
+    console.error('シート取得エラー:', error);
+    throw error;
+  }
+};
+
+export const getCounselingSheet = async (sheetId: string): Promise<CounselingSheet | null> => {
+  try {
+    const sheetRef = doc(db, 'sheets', sheetId);
+    const sheetSnap = await getDoc(sheetRef);
+    
+    if (sheetSnap.exists()) {
+      return {
+        ...sheetSnap.data(),
+        id: sheetSnap.id,
+        createdAt: sheetSnap.data().createdAt?.toDate(),
+        updatedAt: sheetSnap.data().updatedAt?.toDate()
+      } as CounselingSheet;
+    }
+    return null;
   } catch (error) {
     console.error('シート取得エラー:', error);
     throw error;
@@ -161,6 +241,61 @@ export const deleteCounselingSheet = async (sheetId: string) => {
     await deleteDoc(sheetRef);
   } catch (error) {
     console.error('シート削除エラー:', error);
+    throw error;
+  }
+};
+
+// 回答関連の関数
+export const submitSheetResponse = async (response: SheetResponse) => {
+  try {
+    console.log('回答送信開始:', response);
+    
+    const { collection, addDoc } = await import('firebase/firestore');
+    const responsesRef = collection(db, 'responses');
+    
+    // response.idを除外して、Firestoreが自動的にIDを生成するようにする
+    const { id, ...responseData } = response;
+    
+    // Firestoreに保存
+    const cleanResponseData = {
+      ...responseData,
+      submittedAt: new Date()
+    };
+    
+    console.log('送信するデータ:', cleanResponseData);
+    
+    const docRef = await addDoc(responsesRef, cleanResponseData);
+    
+    console.log('回答送信完了:', docRef.id);
+  } catch (error) {
+    console.error('回答送信エラー詳細:', error);
+    throw error;
+  }
+};
+
+export const getSheetResponses = async (sheetId: string): Promise<SheetResponse[]> => {
+  try {
+    const { collection, query, where, getDocs } = await import('firebase/firestore');
+    const responsesRef = collection(db, 'responses');
+    const q = query(
+      responsesRef,
+      where('sheetId', '==', sheetId)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    const responses = querySnapshot.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id,
+      submittedAt: doc.data().submittedAt?.toDate()
+    })) as SheetResponse[];
+    
+    // クライアント側でソート
+    return responses.sort((a, b) => {
+      if (!a.submittedAt || !b.submittedAt) return 0;
+      return b.submittedAt.getTime() - a.submittedAt.getTime();
+    });
+  } catch (error) {
+    console.error('回答取得エラー:', error);
     throw error;
   }
 };

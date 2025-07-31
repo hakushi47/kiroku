@@ -16,9 +16,11 @@
     "@hookform/resolvers": "^5.2.1",
     "firebase": "^12.0.0",
     "next": "15.4.5",
+    "qrcode": "^1.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.61.1",
+    "react-qr-code": "^2.0.18",
     "yup": "^1.6.1"
   },
   "devDependencies": {

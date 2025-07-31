@@ -38,7 +38,7 @@ export const Input: React.FC<InputProps> = ({
         onChange={onChange}
         name={name}
         required={required}
-        className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7CA98B] focus:border-transparent ${
+        className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7CA98B] focus:border-transparent text-gray-900 placeholder-gray-500 ${
           error ? 'border-[#FFB6B6]' : ''
         }`}
       />

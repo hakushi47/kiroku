@@ -24,6 +24,7 @@ import {
 import { Question, QuestionType, CounselingSheet, saveCounselingSheet } from '@/lib/firebase';
 import { QuestionCard } from '@/components/QuestionCard';
 import { QuestionEditor } from '@/components/QuestionEditor';
+import { QRCodeGenerator } from '@/components/QRCodeGenerator';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 
@@ -44,6 +45,7 @@ export default function SheetBuilderPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [showQR, setShowQR] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -76,7 +78,8 @@ export default function SheetBuilderPage() {
       title: '',
       required: false,
       order: sheet.questions.length,
-      options: type === 'radio' || type === 'checkbox' ? [''] : undefined
+      options: type === 'radio' || type === 'checkbox' ? [''] : null,
+      placeholder: null
     };
 
     setSheet(prev => ({
@@ -192,12 +195,42 @@ export default function SheetBuilderPage() {
               </Button>
               <h1 className="text-2xl font-bold text-gray-900">カウンセリングシートビルダー</h1>
             </div>
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving ? '保存中...' : 'シートを保存'}
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? '保存中...' : 'シートを保存'}
+              </Button>
+              <Button
+                onClick={() => setShowQR(!showQR)}
+                variant="secondary"
+                disabled={!sheet.id || sheet.questions.length === 0}
+              >
+                {showQR ? 'QRコードを隠す' : 'QRコード生成'}
+              </Button>
+              <Button
+                onClick={() => {
+                  // テスト用：サンプル質問を追加
+                  const testQuestion = {
+                    id: `test_${Date.now()}`,
+                    type: 'text' as QuestionType,
+                    title: 'テスト質問',
+                    required: false,
+                    order: 0,
+                    placeholder: null,
+                    options: null
+                  };
+                  setSheet(prev => ({
+                    ...prev,
+                    questions: [testQuestion]
+                  }));
+                }}
+                variant="secondary"
+              >
+                テスト質問追加
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -235,6 +268,16 @@ export default function SheetBuilderPage() {
             />
           </div>
         </div>
+
+        {/* QRコード生成 */}
+        {showQR && (
+          <div className="mb-8">
+            <QRCodeGenerator
+              sheet={sheet}
+              baseUrl={typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 左ペイン：質問追加 */}

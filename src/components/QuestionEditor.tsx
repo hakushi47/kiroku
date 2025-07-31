@@ -72,10 +72,10 @@ export const QuestionEditor: React.FC<QuestionEditorProps> = ({
       title: formData.title.trim(),
       type: formData.type || 'text',
       required: formData.required || false,
-      placeholder: formData.placeholder || undefined,
+      placeholder: formData.placeholder || null,
       options: (formData.type === 'radio' || formData.type === 'checkbox') 
         ? formData.options?.filter(opt => opt.trim()) || []
-        : undefined
+        : null
     };
 
     onSave(updatedQuestion);
@@ -157,7 +157,7 @@ export const QuestionEditor: React.FC<QuestionEditorProps> = ({
                     value={option}
                     onChange={(e) => updateOption(index, e.target.value)}
                     placeholder={`選択肢 ${index + 1}`}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7CA98B] focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7CA98B] focus:border-transparent text-gray-900 placeholder-gray-500"
                   />
                   <button
                     type="button"
