@@ -27,6 +27,7 @@ import { QuestionEditor } from '@/components/QuestionEditor';
 import { QRCodeGenerator } from '@/components/QRCodeGenerator';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import Layout from '@/components/Layout';
 
 export default function SheetBuilderPage() {
   const { user, loading } = useAuth();
@@ -181,62 +182,65 @@ export default function SheetBuilderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
-      {/* ヘッダー */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={() => router.push('/')}
-                variant="secondary"
-              >
-                ← ホームに戻る
-              </Button>
-              <h1 className="text-2xl font-bold text-gray-900">カウンセリングシートビルダー</h1>
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-              >
-                {saving ? '保存中...' : 'シートを保存'}
-              </Button>
-              <Button
-                onClick={() => setShowQR(!showQR)}
-                variant="secondary"
-                disabled={!sheet.id || sheet.questions.length === 0}
-              >
-                {showQR ? 'QRコードを隠す' : 'QRコード生成'}
-              </Button>
-              <Button
-                onClick={() => {
-                  // テスト用：サンプル質問を追加
-                  const testQuestion = {
-                    id: `test_${Date.now()}`,
-                    type: 'text' as QuestionType,
-                    title: 'テスト質問',
-                    required: false,
-                    order: 0,
-                    placeholder: null,
-                    options: null
-                  };
-                  setSheet(prev => ({
-                    ...prev,
-                    questions: [testQuestion]
-                  }));
-                }}
-                variant="secondary"
-              >
-                テスト質問追加
-              </Button>
-            </div>
-          </div>
+    <Layout title="カウンセリングシートビルダー">
+      <div className="max-w-7xl mx-auto">
+        {/* アクションボタン */}
+        <div className="flex justify-end space-x-2 mb-6">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? '保存中...' : 'シートを保存'}
+          </Button>
+          <Button
+            onClick={() => setShowQR(!showQR)}
+            variant="secondary"
+            disabled={!sheet.id || sheet.questions.length === 0}
+          >
+            {showQR ? 'QRコードを隠す' : 'QRコード生成'}
+          </Button>
+          {sheet.id && (
+            <Button
+              onClick={() => router.push(`/sheet/${sheet.id}/edit`)}
+              variant="secondary"
+            >
+              お客様情報編集
+            </Button>
+          )}
+          <Button
+            onClick={() => {
+              // テスト用：サンプル質問を追加
+              const testQuestion = {
+                id: `test_${Date.now()}`,
+                type: 'text' as QuestionType,
+                title: 'テスト質問',
+                required: false,
+                order: 0,
+                placeholder: null,
+                options: null
+              };
+              setSheet(prev => ({
+                ...prev,
+                questions: [testQuestion]
+              }));
+            }}
+            variant="secondary"
+          >
+            テスト質問追加
+          </Button>
         </div>
-      </header>
 
-      {/* メインコンテンツ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {message && (
+          <div className="mb-4 bg-[#7CA98B] text-white px-4 py-3 rounded-lg">
+            {message}
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 bg-[#FFB6B6] text-white px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
         {message && (
           <div className="mb-4 bg-[#7CA98B] text-white px-4 py-3 rounded-lg">
             {message}
@@ -386,6 +390,6 @@ export default function SheetBuilderPage() {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 } 

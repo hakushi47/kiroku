@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { saveUserProfile, getUserProfile, UserProfile, Course, Back } from '@/lib/firebase';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import Layout from '@/components/Layout';
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
@@ -145,18 +146,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <Layout title="プロフィール編集">
+      <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">プロフィール編集</h1>
-            <Button
-              onClick={() => router.push('/')}
-              variant="secondary"
-            >
-              ホームに戻る
-            </Button>
-          </div>
 
           {message && (
             <div className="mb-4 bg-[#7CA98B] text-white px-4 py-3 rounded-lg">
@@ -325,6 +317,6 @@ export default function ProfilePage() {
           </form>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 } 

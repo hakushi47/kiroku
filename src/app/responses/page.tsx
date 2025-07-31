@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { CounselingSheet, SheetResponse, getCounselingSheets, getSheetResponses } from '@/lib/firebase';
 import { Button } from '@/components/Button';
+import Layout from '@/components/Layout';
 
 export default function ResponsesPage() {
   const { user, loading } = useAuth();
@@ -102,26 +103,8 @@ export default function ResponsesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
-      {/* ヘッダー */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={() => router.push('/')}
-                variant="secondary"
-              >
-                ← ホームに戻る
-              </Button>
-              <h1 className="text-2xl font-bold text-gray-900">回答一覧</h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* メインコンテンツ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <Layout title="回答一覧">
+      <div className="max-w-7xl mx-auto">
         {sheets.length === 0 ? (
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">シートがありません</h2>
@@ -227,6 +210,6 @@ export default function ResponsesPage() {
           </div>
         )}
       </div>
-    </div>
+    </Layout>
   );
 } 

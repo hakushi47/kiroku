@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { CounselingSheet, Question, submitSheetResponse, SheetResponse, Answer, getCounselingSheet } from '@/lib/firebase';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 
 export default function SheetResponsePage() {
   const params = useParams();
+  const router = useRouter();
   const sheetId = params.id as string;
   
   const [sheet, setSheet] = useState<CounselingSheet | null>(null);
@@ -249,6 +250,71 @@ export default function SheetResponsePage() {
               <p className="text-gray-600">{sheet.description}</p>
             )}
           </div>
+
+          {/* お客様情報表示 */}
+          {sheet.customerInfo && (
+            <div className="bg-[#F8F8F8] rounded-lg p-6 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-[#333333]">お客様情報</h2>
+                <button
+                  onClick={() => router.push(`/sheet/${sheetId}/edit`)}
+                  className="bg-[#A0526A] text-white px-3 py-1 rounded text-sm hover:bg-[#8B4A5A] transition-colors"
+                >
+                  編集
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                {sheet.customerInfo.name && (
+                  <div>
+                    <span className="font-medium text-[#666666]">お名前:</span>
+                    <span className="ml-2 text-[#333333]">{sheet.customerInfo.name}</span>
+                  </div>
+                )}
+                {sheet.customerInfo.age && (
+                  <div>
+                    <span className="font-medium text-[#666666]">年齢:</span>
+                    <span className="ml-2 text-[#333333]">{sheet.customerInfo.age}</span>
+                  </div>
+                )}
+                {sheet.customerInfo.preferences && (
+                  <div className="md:col-span-2">
+                    <span className="font-medium text-[#666666]">好み・要望:</span>
+                    <p className="mt-1 text-[#333333]">{sheet.customerInfo.preferences}</p>
+                  </div>
+                )}
+                {sheet.customerInfo.notes && (
+                  <div className="md:col-span-2">
+                    <span className="font-medium text-[#666666]">接客メモ:</span>
+                    <p className="mt-1 text-[#333333]">{sheet.customerInfo.notes}</p>
+                  </div>
+                )}
+                {sheet.customerInfo.contactInfo && (
+                  <div className="md:col-span-2">
+                    <span className="font-medium text-[#666666]">連絡先:</span>
+                    <span className="ml-2 text-[#333333]">{sheet.customerInfo.contactInfo}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* お客様情報が未設定の場合の編集リンク */}
+          {!sheet.customerInfo && (
+            <div className="bg-[#F8F8F8] rounded-lg p-6 mb-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-[#333333] mb-2">お客様情報</h2>
+                  <p className="text-[#666666] text-sm">お客様情報が未設定です</p>
+                </div>
+                <button
+                  onClick={() => router.push(`/sheet/${sheetId}/edit`)}
+                  className="bg-[#A0526A] text-white px-4 py-2 rounded-lg hover:bg-[#8B4A5A] transition-colors"
+                >
+                  お客様情報を追加
+                </button>
+              </div>
+            </div>
+          )}
 
           {message && (
             <div className="mb-4 bg-[#7CA98B] text-white px-4 py-3 rounded-lg">

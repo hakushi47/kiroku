@@ -99,11 +99,20 @@ export interface Question {
   order: number;
 }
 
+export interface CustomerInfo {
+  name: string;
+  age: string;
+  preferences: string;
+  notes: string;
+  contactInfo: string;
+}
+
 export interface CounselingSheet {
   id: string;
   title: string;
   description?: string;
   questions: Question[];
+  customerInfo?: CustomerInfo;
   createdAt: Date;
   updatedAt: Date;
 }
