@@ -1,5 +1,6 @@
 import Link from "next/link";
-import LoginPage from './components/signin';
+
+
 
 export default function HomePage() {
   return (
@@ -13,16 +14,16 @@ export default function HomePage() {
         </p>
         <div className="space-x-4">
           <Link
-            href="/login"
+            href="/signin"
             className="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50"
           >
             ログイン
           </Link>
           <Link
-            href="/register"
+            href="/signup"
             className="px-6 py-3 bg-white/80 text-primary font-bold rounded-lg hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50"
           >
-            登録はこちら
+            新規登録
           </Link>
         </div>
       </div>

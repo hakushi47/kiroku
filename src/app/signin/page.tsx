@@ -1,9 +1,8 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 
-const LoginPage = () => {
+const SigninPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -88,4 +87,4 @@ const LoginPage = () => {
 }
 
 
-export default LoginPage;
+export default SigninPage;
