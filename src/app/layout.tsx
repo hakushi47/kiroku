@@ -20,10 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${notoSansJp.className} ${notoSansJp.className} antialiased`}
-      >
+    <html lang="ja">
+      <body className={`${notoSansJp.className} bg-background text-text antialiased`}>
         {children}
       </body>
     </html>
